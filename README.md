@@ -14,10 +14,10 @@ NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
 
 [EYWebScraper scrape:@"https://example.com" usingGist:gist completion:^(id result, NSError *error)
 {
-    if(error)
-        NSLog(@"Error: %@",[error description]);
-    else
+    if(!error)
         NSLog(@"Result: %@",[result description]);
+    else
+        NSLog(@"Error: %@",[error description]);
 }];
     
 ```
@@ -30,9 +30,9 @@ NSString* script = @"function scrape(){return document.getElementsByTagName('a')
 
 [EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(id result, NSError *error)
 {
-    if(error)
-        NSLog(@"Error: %@",[error description]);
-    else
+    if(!error)
         NSLog(@"Result: %@",[result description]);
+    else
+        NSLog(@"Error: %@",[error description]);
 }];
 ```
