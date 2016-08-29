@@ -5,6 +5,8 @@ GitHub gist is useful if scraping code needs to be updated due to often layout c
 
 #Usage
 
+- With GitHub gist:  (example gist [erkanyildiz/1b58dc431407093dfd7a2437a9563c68](https://gist.github.com/erkanyildiz/1b58dc431407093dfd7a2437a9563c68))
+
 ```
 //Specify GitHub gist that contains JavaScript code to be used for scraping in `username/gistid` format.
 
@@ -16,7 +18,10 @@ GitHub gist is useful if scraping code needs to be updated due to often layout c
         NSLog(@"Result: %@",[result description]);
 }];
     
-
+```
+    
+- With Hardcoded JavaScript:
+```
 //Or specify hardcoded JavaScript code
 
 NSString* script = @"function scrape(){return document.getElementsByTagName('a')[0].href;} scrape();";
