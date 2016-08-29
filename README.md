@@ -6,7 +6,7 @@ GitHub gist is useful if scraping code needs to be updated due to often layout c
 #Usage
 
 ```
-//Specify GitHub gist that contains JavaScript code to be used for scraping in `username/gistid` format. E.g. [erkanyildiz/1b58dc431407093dfd7a2437a9563c68](https://gist.github.com/erkanyildiz/1b58dc431407093dfd7a2437a9563c68)
+//Specify GitHub gist that contains JavaScript code to be used for scraping in `username/gistid` format.
 
 [EYWebScraper scrape:@"https://example.com" usingGist:@"erkanyildiz/1b58dc431407093dfd7a2437a9563c68" completion:^(id result, NSError *error)
 {
