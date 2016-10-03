@@ -30,5 +30,5 @@
  * @param js JavaScript code to be used for scraping
  * @param completion Completion block to be executed when scraping is completed, either with result object or error.
  */
-+ (void)scrape:(NSString*)url usingJS:(NSString*)js completion:(void (^)(id result, NSError* error))completion;
++ (void)scrape:(NSString *)URL usingJS:(NSString*)js completion:(void (^)(id result, NSError * error))completion;
 @end

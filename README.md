@@ -12,12 +12,12 @@ GitHub gist is useful if scraping code needs to be updated due to often layout c
 
 NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
 
-[EYWebScraper scrape:@"https://example.com" usingGist:gist completion:^(id result, NSError *error)
+[EYWebScraper scrape:@"https://example.com" usingGist:gist completion:^(id result, NSError * error)
 {
     if(!error)
-        NSLog(@"Result: %@",[result description]);
+        NSLog(@"Result: %@", result);
     else
-        NSLog(@"Error: %@",[error description]);
+        NSLog(@"Error: %@", error);
 }];
     
 ```
@@ -28,11 +28,11 @@ NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
 
 NSString* script = @"return document.getElementsByTagName('a')[0].href;";
 
-[EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(id result, NSError *error)
+[EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(id result, NSError * error)
 {
     if(!error)
-        NSLog(@"Result: %@",[result description]);
+        NSLog(@"Result: %@", result);
     else
-        NSLog(@"Error: %@",[error description]);
+        NSLog(@"Error: %@", error);
 }];
 ```
