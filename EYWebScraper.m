@@ -1,21 +1,20 @@
 // erkanyildiz
-// 20160829-1555UTC+09
+// 20161003-1211+0900
 //
 // EYWebScraper.m
 
 #import "EYWebScraper.h"
-#import <JavaScriptCore/JavaScriptCore.h>
 
 @interface EYWebScraper ()
 @property (nonatomic, strong) NSString* js;
 @property (nonatomic, strong) UIWebView* web;
 @property (nonatomic, strong) EYWebScraper* keeper;
-@property (nonatomic, copy) void (^completion)(id result, NSError* error);
+@property (nonatomic, copy) void (^completion)(id result, NSError * error);
 @end
 
 
 @implementation EYWebScraper
-+ (void)scrape:(NSString*)url usingGist:(NSString*)gist completion:(void (^)(id result, NSError* error))completion
++ (void)scrape:(NSString *)URL usingGist:(NSString *)gist completion:(void (^)(id result, NSError * error))completion
 {
     NSString* gistURL = [NSString stringWithFormat:@"https://gist.githubusercontent.com/%@/raw", gist];
 
@@ -35,32 +34,33 @@
         {
             dispatch_async(dispatch_get_main_queue(), ^
             {
-                [EYWebScraper scrape:url usingJS:js completion:completion];
+                [EYWebScraper scrape:URL usingJS:js completion:completion];
             });
         }
     }] resume];
 }
 
 
-+ (void)scrape:(NSString*)url usingJS:(NSString*)js completion:(void (^)(id result, NSError* error))completion
++ (void)scrape:(NSString *)URL usingJS:(NSString *)js completion:(void (^)(id result, NSError * error))completion
 {
-    EYWebScraper* ws = [EYWebScraper.alloc initWithURL:url JS:js completion:completion];
+    EYWebScraper* ws = [EYWebScraper.alloc initWithURL:URL JS:js completion:completion];
     ws.keeper = ws;
 }
 
 
-- (instancetype)initWithURL:(NSString*)url JS:(NSString*)js completion:(void (^)(id result, NSError* error))completion
+- (instancetype)initWithURL:(NSString *)URL JS:(NSString *)js completion:(void (^)(id result, NSError * error))completion
 {
     self = [super init];
     if (self)
     {
-        self.js = js;
+        NSString* wrapped = [NSString stringWithFormat:@"function EYWebScraperWrapperFunction(){%@} EYWebScraperWrapperFunction();", js];
+        self.js = wrapped;
         self.completion = completion;
     
         self.web = [UIWebView.alloc initWithFrame:CGRectZero];
         self.web.delegate = self;
         self.web.hidden = YES;
-        [self.web loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+        [self.web loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URL]]];
     }
     
     return self;

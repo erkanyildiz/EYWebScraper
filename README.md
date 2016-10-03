@@ -26,7 +26,7 @@ NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
 ```
 //Or specify hardcoded JavaScript code
 
-NSString* script = @"function scrape(){return document.getElementsByTagName('a')[0].href;} scrape();";
+NSString* script = @"return document.getElementsByTagName('a')[0].href;";
 
 [EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(id result, NSError *error)
 {
