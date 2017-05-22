@@ -1,24 +1,34 @@
 // erkanyildiz
-// 20161003-1211+0900
+// 20170523-0015+0900
 //
 // EYWebScraper.m
 
 #import "EYWebScraper.h"
 
+
+NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
+
+
 @interface EYWebScraper ()
+
 @property (nonatomic, strong) NSString* js;
 @property (nonatomic, strong) UIWebView* web;
 @property (nonatomic, strong) EYWebScraper* keeper;
 @property (nonatomic, copy) void (^completion)(id result, NSError * error);
+
 @end
 
 
 @implementation EYWebScraper
-+ (void)scrape:(NSString *)URL usingGist:(NSString *)gist completion:(void (^)(id result, NSError * error))completion
+
++ (void)scrape:(NSString *)URL usingGist:(NSString *)gist completion:(void (^)(id result, NSError* error))completion
 {
+    if(!completion)
+        return;
+
     NSString* gistURL = [NSString stringWithFormat:@"https://gist.githubusercontent.com/%@/raw", gist];
 
-    [[NSURLSession.sharedSession dataTaskWithURL:[NSURL URLWithString:gistURL] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error)
+    [[NSURLSession.sharedSession dataTaskWithURL:[NSURL URLWithString:gistURL] completionHandler:^(NSData* data, NSURLResponse* response, NSError* error)
     {
         NSString* js = [NSString.alloc initWithData:data encoding:NSUTF8StringEncoding];
 
@@ -28,7 +38,7 @@
         }
         else if (!js)
         {
-            completion(nil, [NSError errorWithDomain:@"EYWebScraperErrorDomain" code:0 userInfo:@{NSLocalizedDescriptionKey:@"Invalid gist file content"}]);
+            completion(nil, [EYWebScraper error:EYWebScraperErrorInvalidGistContent]);
         }
         else
         {
@@ -43,6 +53,9 @@
 
 + (void)scrape:(NSString *)URL usingJS:(NSString *)js completion:(void (^)(id result, NSError * error))completion
 {
+    if(!completion)
+        return;
+
     EYWebScraper* ws = [EYWebScraper.alloc initWithURL:URL JS:js completion:completion];
     ws.keeper = ws;
 }
@@ -67,6 +80,9 @@
 }
 
 
+#pragma mark -
+
+
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
     return YES;
@@ -79,7 +95,11 @@
         return;
     
     NSString* result = [webView stringByEvaluatingJavaScriptFromString:self.js];
-    self.completion(result, nil);
+    if(!result.length)
+        self.completion(nil, [EYWebScraper error:EYWebScraperErrorJavaScriptEvaluationEmptyString]);
+    else
+        self.completion(result, nil);
+
     self.keeper = nil;
 }
 
@@ -88,5 +108,40 @@
 {
     self.completion(nil, error);
     self.keeper = nil;
+}
+
+
+#pragma mark -
+
+
++ (NSError *)error:(NSInteger)errorCode
+{
+    NSMutableDictionary* userInfo = NSMutableDictionary.new;
+    NSString* const kEYWebScraperErrorDescriptionKey = @"description";
+
+    switch (errorCode)
+    {
+        case EYWebScraperErrorInvalidGistContent:
+        {
+            userInfo[kEYWebScraperErrorDescriptionKey] = @"Gist content is invalid.";
+        }break;
+
+        case EYWebScraperErrorJavaScriptEvaluationEmptyString:
+        {
+            userInfo[kEYWebScraperErrorDescriptionKey] = @"JavaScript evaluation result is empty string.";
+        }break;
+        
+        default:
+            userInfo = nil;
+        break;
+    }
+
+    return [NSError errorWithDomain:EYWebScraperErrorDomain code:errorCode userInfo:userInfo];
+}
+
+
+-(void)dealloc
+{
+    NSLog(@"dealloc %p", self);
 }
 @end

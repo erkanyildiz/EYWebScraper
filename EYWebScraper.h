@@ -1,9 +1,19 @@
 // erkanyildiz
-// 20161003-1211+0900
+// 20170523-0015+0900
 //
 // EYWebScraper.h
 
 #import <Foundation/Foundation.h>
+
+
+extern NSErrorDomain const EYWebScraperErrorDomain;
+
+NS_ENUM(NSInteger)
+{
+    EYWebScraperErrorInvalidGistContent = 1001,
+    EYWebScraperErrorJavaScriptEvaluationEmptyString = 1002
+};
+
 
 @interface EYWebScraper : NSObject <UIWebViewDelegate>
 
@@ -21,6 +31,7 @@
  */
 + (void)scrape:(NSString *)URL usingGist:(NSString *)gistID completion:(void (^)(id result, NSError * error))completion;
 
+
 /**
  * Scrapes the target web page on given URL, using given JavaScript code, and executes completion block with the result object.
  * @discussion Target web page will be loaded into a dummy unvisible UIWebView, and JavaScript from the gist will be used for scaping when the page loads completely.
@@ -31,4 +42,5 @@
  * @param completion Completion block to be executed when scraping is completed, either with result object or error.
  */
 + (void)scrape:(NSString *)URL usingJS:(NSString*)js completion:(void (^)(id result, NSError * error))completion;
+
 @end
