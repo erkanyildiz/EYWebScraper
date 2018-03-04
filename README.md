@@ -1,9 +1,9 @@
-# EYWebScaper
+# EYWebScraper
 An helper for scraping contents of web pages using hardcoded or GitHub gist hosted JavaScript code.
 
-GitHub gist is useful if scraping code needs to be updated due to often layout changes on the target web page. Just updating the gist with the new JavaScript code is enough, no need to send an update to the App Store.
+GitHub gist is especially useful if scraping code needs to be updated due to often layout changes on the target web page.
 
-#Usage
+## Usage
 
 - With GitHub gist:  (example gist [erkanyildiz/1b58dc431407093dfd7a2437a9563c68](https://gist.github.com/erkanyildiz/1b58dc431407093dfd7a2437a9563c68))
 
@@ -12,9 +12,9 @@ GitHub gist is useful if scraping code needs to be updated due to often layout c
 
 NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
 
-[EYWebScraper scrape:@"https://example.com" usingGist:gist completion:^(id result, NSError * error)
+[EYWebScraper scrape:@"https://example.com" usingGist:gist completion:^(NSString* result, NSError* error)
 {
-    if(!error)
+    if (!error)
         NSLog(@"Result: %@", result);
     else
         NSLog(@"Error: %@", error);
@@ -22,15 +22,15 @@ NSString* gist = @"erkanyildiz/1b58dc431407093dfd7a2437a9563c68";
     
 ```
     
-- With Hardcoded JavaScript:
+- With hardcoded JavaScript code:
 ```
 //Or specify hardcoded JavaScript code
 
 NSString* script = @"return document.getElementsByTagName('a')[0].href;";
 
-[EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(id result, NSError * error)
+[EYWebScraper scrape:@"https://www.example.com" usingJS:script completion:^(NSString* result, NSError* error)
 {
-    if(!error)
+    if (!error)
         NSLog(@"Result: %@", result);
     else
         NSLog(@"Error: %@", error);

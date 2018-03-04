@@ -1,5 +1,5 @@
 // erkanyildiz
-// 20170523-0015+0900
+// 20180304-1945+0900
 //
 // EYWebScraper.m
 
@@ -11,19 +11,19 @@ NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
 
 @interface EYWebScraper ()
 
-@property (nonatomic, strong) NSString* js;
-@property (nonatomic, strong) UIWebView* web;
+@property (nonatomic, copy) NSString* js;
+@property (nonatomic, copy) UIWebView* web;
+@property (nonatomic, copy) void (^completion)(NSString* result, NSError* error);
 @property (nonatomic, strong) EYWebScraper* keeper;
-@property (nonatomic, copy) void (^completion)(id result, NSError * error);
 
 @end
 
 
 @implementation EYWebScraper
 
-+ (void)scrape:(NSString *)URL usingGist:(NSString *)gist completion:(void (^)(id result, NSError* error))completion
++ (void)scrape:(NSString *)URL usingGist:(NSString *)gist completion:(void (^)(NSString* result, NSError* error))completion
 {
-    if(!completion)
+    if (!URL.length || !gist.length || !completion)
         return;
 
     NSString* gistURL = [NSString stringWithFormat:@"https://gist.githubusercontent.com/%@/raw", gist];
@@ -32,53 +32,36 @@ NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
     {
         NSString* js = [NSString.alloc initWithData:data encoding:NSUTF8StringEncoding];
 
-        if(error)
+        onMainThread(^
         {
-            completion(nil, error);
-        }
-        else if (!js)
-        {
-            completion(nil, [EYWebScraper error:EYWebScraperErrorInvalidGistContent]);
-        }
-        else
-        {
-            dispatch_async(dispatch_get_main_queue(), ^
-            {
+            if (error)
+                completion(nil, error);
+            else if (!js)
+                completion(nil, [EYWebScraper error:EYWebScraperErrorInvalidGistContent]);
+            else
                 [EYWebScraper scrape:URL usingJS:js completion:completion];
-            });
-        }
+        });
     }] resume];
 }
 
 
-+ (void)scrape:(NSString *)URL usingJS:(NSString *)js completion:(void (^)(id result, NSError * error))completion
++ (void)scrape:(NSString *)URL usingJS:(NSString *)js completion:(void (^)(NSString* result, NSError* error))completion
 {
-    if(!completion)
+    if (!URL.length || !js.length || !completion)
         return;
 
-    EYWebScraper* ws = [EYWebScraper.alloc initWithURL:URL JS:js completion:completion];
+    EYWebScraper* ws = EYWebScraper.new;
+    NSString* wrapped = [NSString stringWithFormat:@"function EYWebScraperWrapperFunction(){%@} EYWebScraperWrapperFunction();", js];
+    ws.js = wrapped;
+    ws.completion = completion;
+
+    ws.web = [UIWebView.alloc initWithFrame:CGRectZero];
+    ws.web.hidden = YES;
+    ws.web.delegate = ws;
+    [ws.web loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URL]]];
+
     ws.keeper = ws;
 }
-
-
-- (instancetype)initWithURL:(NSString *)URL JS:(NSString *)js completion:(void (^)(id result, NSError * error))completion
-{
-    self = [super init];
-    if (self)
-    {
-        NSString* wrapped = [NSString stringWithFormat:@"function EYWebScraperWrapperFunction(){%@} EYWebScraperWrapperFunction();", js];
-        self.js = wrapped;
-        self.completion = completion;
-    
-        self.web = [UIWebView.alloc initWithFrame:CGRectZero];
-        self.web.delegate = self;
-        self.web.hidden = YES;
-        [self.web loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URL]]];
-    }
-    
-    return self;
-}
-
 
 #pragma mark -
 
@@ -95,10 +78,13 @@ NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
         return;
     
     NSString* result = [webView stringByEvaluatingJavaScriptFromString:self.js];
-    if(!result.length)
-        self.completion(nil, [EYWebScraper error:EYWebScraperErrorJavaScriptEvaluationEmptyString]);
-    else
-        self.completion(result, nil);
+    onMainThread(^
+    {
+        if (!result.length)
+            self.completion(nil, [EYWebScraper error:EYWebScraperErrorJavaScriptEvaluationEmptyString]);
+        else
+            self.completion(result, nil);
+    });
 
     self.keeper = nil;
 }
@@ -106,7 +92,11 @@ NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
 {
-    self.completion(nil, error);
+    onMainThread(^
+    {
+        self.completion(nil, error);
+    });
+
     self.keeper = nil;
 }
 
@@ -136,12 +126,13 @@ NSErrorDomain const EYWebScraperErrorDomain = @"EYWebScraperErrorDomain";
         break;
     }
 
-    return [NSError errorWithDomain:EYWebScraperErrorDomain code:errorCode userInfo:userInfo];
+    return [NSError errorWithDomain:EYWebScraperErrorDomain code:errorCode userInfo:userInfo.copy];
 }
 
 
--(void)dealloc
+void onMainThread(void (^block)(void))
 {
-    NSLog(@"dealloc %p", self);
+    dispatch_async(dispatch_get_main_queue(), block);
 }
+
 @end
